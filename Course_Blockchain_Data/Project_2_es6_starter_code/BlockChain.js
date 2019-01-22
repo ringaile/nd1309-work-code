@@ -7,9 +7,13 @@ const LevelSandbox = require('./LevelSandbox.js');
 const Block = require('./Block.js');
 
 class Blockchain {
-  constructor () {
+  constructor (app) {
     this.bd = new LevelSandbox.LevelSandbox();
     this.generateGenesisBlock();
+    this.app = app;
+    this.initializeMockData();
+    this.getBlockByIndex();
+    this.postNewBlock();
   }
 
 // Helper method to create a Genesis Block (always with height= 0)
