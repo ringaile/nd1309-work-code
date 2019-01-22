@@ -6,12 +6,11 @@ const SHA256 = require('crypto-js/sha256');
 const LevelSandbox = require('./LevelSandbox.js');
 const Block = require('./Block.js');
 
-class Blockchain {
+class BlockChain {
   constructor (app) {
+    this.app = app;
     this.bd = new LevelSandbox.LevelSandbox();
     this.generateGenesisBlock();
-    this.app = app;
-    this.initializeMockData();
     this.getBlockByIndex();
     this.postNewBlock();
   }
@@ -22,7 +21,13 @@ class Blockchain {
     getBlockByIndex() {
         this.app.get("/api/block/:index", (req, res) => {
             // Add your code here
-            res.send(getBlock(req.params.index));
+            this.getBlock(req.params.index).then((block) => {
+              console.log(JSON.stringify(block));
+              res.send(block);
+            }).catch((err) => { 
+              console.log(err);
+              res.send("There was a error with getting a block.");
+            });
 
         });
     }
@@ -32,24 +37,15 @@ class Blockchain {
      */
     postNewBlock() {
         this.app.post("/api/block", (req, res) => {
-            let blockTest = new Block.Block("Test Block - " + (i + 1));
-            addBlock(blockTest);
-            res.send("Got a Post request!");
+            let blockTest = new Block.Block("Test Block - ");
+            this.addBlock(blockTest).then((result) => {
+              console.log(result);
+              res.send("Got a Post request!");
+            }).catch((err) => { 
+              console.log(err);
+              res.send("There was a error creating a block.");
+            });            
         });
-    }
-
-        /**
-     * Help method to inizialized Mock dataset, adds 10 test blocks to the blocks array
-     */
-    initializeMockData() {
-        if(this.blocks.length === 0){
-            for (let index = 0; index < 10; index++) {
-                let blockAux = new BlockClass.Block(`Test Data #${index}`);
-                blockAux.height = index;
-                blockAux.hash = SHA256(JSON.stringify(blockAux)).toString();
-                this.blocks.push(blockAux);
-            }
-        }
     }
 
 // Helper method to create a Genesis Block (always with height= 0)
@@ -79,7 +75,7 @@ async addBlock (newBlock) {
     const previousBlock = await this.getBlock(height)
     newBlock.previousBlockHash = previousBlock.hash
     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-    return this.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock).toString());
+    return this.bd.addLevelDBData(newBlock.height, JSON.stringify(newBlock));
 }
 
 // Get Block By Height
