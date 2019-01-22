@@ -16,6 +16,42 @@ class Blockchain {
     this.postNewBlock();
   }
 
+  /**
+     * Implement a GET Endpoint to retrieve a block by index, url: "/api/block/:index"
+     */
+    getBlockByIndex() {
+        this.app.get("/api/block/:index", (req, res) => {
+            // Add your code here
+            res.send(getBlock(req.params.index));
+
+        });
+    }
+
+        /**
+     * Implement a POST Endpoint to add a new Block, url: "/api/block"
+     */
+    postNewBlock() {
+        this.app.post("/api/block", (req, res) => {
+            let blockTest = new Block.Block("Test Block - " + (i + 1));
+            addBlock(blockTest);
+            res.send("Got a Post request!");
+        });
+    }
+
+        /**
+     * Help method to inizialized Mock dataset, adds 10 test blocks to the blocks array
+     */
+    initializeMockData() {
+        if(this.blocks.length === 0){
+            for (let index = 0; index < 10; index++) {
+                let blockAux = new BlockClass.Block(`Test Data #${index}`);
+                blockAux.height = index;
+                blockAux.hash = SHA256(JSON.stringify(blockAux)).toString();
+                this.blocks.push(blockAux);
+            }
+        }
+    }
+
 // Helper method to create a Genesis Block (always with height= 0)
 // You have to options, because the method will always execute when you create your blockchain
 // you will need to set this up statically or instead you can verify if the height !== 0 then you
@@ -98,4 +134,4 @@ _modifyBlock (height, block) {
   }
 }
 
-module.exports.Blockchain = Blockchain
+module.exports = (app) => { return new BlockChain(app);}
