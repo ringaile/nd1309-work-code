@@ -37,14 +37,18 @@ class BlockChain {
      */
     postNewBlock() {
         this.app.post("/api/block", (req, res) => {
-            let blockTest = new Block.Block("Test Block - ");
-            this.addBlock(blockTest).then((result) => {
+            if(!req.body.body){
+              res.send("Cannot create Block: String is empty.");
+            } else {
+              let blockTest = new Block.Block(req.body.body);
+              this.addBlock(blockTest).then((result) => {
               console.log(result);
               res.send("Got a Post request!");
-            }).catch((err) => { 
-              console.log(err);
-              res.send("There was a error creating a block.");
-            });            
+              }).catch((err) => { 
+                console.log(err);
+                res.send("There was a error creating a block.");
+              }); 
+            }           
         });
     }
 
