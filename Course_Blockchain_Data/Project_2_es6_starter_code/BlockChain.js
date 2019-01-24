@@ -5,17 +5,70 @@
 const SHA256 = require('crypto-js/sha256');
 const LevelSandbox = require('./LevelSandbox.js');
 const Block = require('./Block.js');
+const bitcoin = require('bitcoinjs-lib');
+const bitcoinMessage = require('bitcoinjs-message');
+const TimeoutRequestsWindowTime = 5*60*1000;
+var isValid = false;
 
 class BlockChain {
   constructor (app) {
     this.app = app;
     this.bd = new LevelSandbox.LevelSandbox();
+    this.timeoutRequests = [];
     this.generateGenesisBlock();
     this.getBlockByHash();
     this.getBlockByIndex();
     this.postNewBlock();
     this.getBlockByAddress();
+    this.postRequestValidation();
+    this.postMessageValidation();
   }
+
+    /**
+     * Implement a POST Endpoint to request validation, url: "/api/requestValidation"
+     */
+    postRequestValidation() {
+        this.app.post("/api/requestValidation", (req, res) => {
+          var timeStamp = new Date().getTime().toString().slice(0, -3);
+          this.timeoutRequests.push(timeStamp);
+
+          var data = {
+            address: req.body.address,
+            requestTimeStamp: timeStamp,
+            message : req.body.address + ":" + timeStamp + ":starRegistry",
+            validationWindow : TimeoutRequestsWindowTime
+          };
+            res.send(data);       
+        });
+    }
+
+        /**
+     * Implement a POST Endpoint to validate message, url: "/api/message-signature/validate"
+     */
+    postMessageValidation() {
+        this.app.post("/api/message-signature/validate", (req, res) => {
+
+          var timeStamp = new Date().getTime().toString().slice(0, -3);
+          this.isValid = bitcoinMessage.verify(message, req.body.address, req.body.signature);
+
+          let timeElapse = (new Date().getTime().toString().slice(0,-3)) - timeStamp[0];
+          let timeLeft = (TimeoutRequestsWindowTime/1000) - timeElapse;
+
+          var status = {
+            address: req.body.address,
+            requestTimeStamp: timeStamp,
+            message : req.body.address + ":" + timeStamp + ":starRegistry",
+            validationWindow : timeLeft,
+            messageSignature : this.isValid 
+          };
+
+          var data = {
+            registerStar : this.isValid ,
+            status : status
+          };
+            res.send(data);       
+        });
+    }
 
   /**
      * Implement a GET Endpoint to retrieve a block by hash, url: "api/stars/hash:[HASH]"
@@ -65,10 +118,11 @@ class BlockChain {
     }
 
         /**
-     * Implement a POST Endpoint to add a new Block, url: "/api/block"
+     * Implement a POST Endpoint to add a new Block, url: "/api/block" only if user has signed already
      */
     postNewBlock() {
         this.app.post("/api/block", (req, res) => {
+          if(isValid){
             if(!req.body){
               res.send("Cannot create Block: String is empty.");
             } else {
@@ -81,7 +135,10 @@ class BlockChain {
                 res.send("There was a error creating a block.");
               }); 
             }           
-        });
+          } else {
+            res.send("You must sign the message before.");
+          }
+      });
     }
 
 // Helper method to create a Genesis Block (always with height= 0)
