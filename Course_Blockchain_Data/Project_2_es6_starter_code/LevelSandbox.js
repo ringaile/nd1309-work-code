@@ -11,6 +11,48 @@ class LevelSandbox {
         this.db = level(chainDB);
     }
 
+    // Get block by hash
+   getLevelDBDataByHash(hash) {
+       let self = this;
+       let block = null;
+       return new Promise(function(resolve, reject){
+           self.db.createReadStream()
+           .on('data', function (data) {
+            var result = JSON.parse(data.value);
+               if(result.hash === hash){
+                   block = result;
+               }
+           })
+           .on('error', function (err) {
+               reject(err)
+           })
+           .on('close', function () {
+               resolve(block);
+           });
+       });
+   }
+
+   // Get block by address
+   getLevelDBDataByAddress(address) {
+       let self = this;
+       let block = null;
+       return new Promise(function(resolve, reject){
+           self.db.createReadStream()
+           .on('data', function (data) {
+            var result = JSON.parse(data.value);
+               if(result.body.address === address){
+                   block = result;
+               }
+           })
+           .on('error', function (err) {
+               reject(err)
+           })
+           .on('close', function () {
+               resolve(block);
+           });
+       });
+   }
+
     // Get data from levelDB with key (Promise)
     getLevelDBData(key){
         let self = this;

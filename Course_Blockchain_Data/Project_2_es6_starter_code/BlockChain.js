@@ -11,12 +11,44 @@ class BlockChain {
     this.app = app;
     this.bd = new LevelSandbox.LevelSandbox();
     this.generateGenesisBlock();
+    this.getBlockByHash();
     this.getBlockByIndex();
     this.postNewBlock();
+    this.getBlockByAddress();
   }
 
   /**
-     * Implement a GET Endpoint to retrieve a block by index, url: "/api/block/:index"
+     * Implement a GET Endpoint to retrieve a block by hash, url: "api/stars/hash:[HASH]"
+     */
+    getBlockByHash() {
+        this.app.get("/api/stars/hash::hash", (req, res) => {
+            // Add your code here
+            this.getDBBlockByHash(req.params.hash).then((block) => {
+              res.send(block);
+            }).catch((err) => { 
+              console.log(err);
+              res.send("There was a error with getting a block.");
+            });
+        });
+    }
+
+      /**
+     * Implement a GET Endpoint to retrieve a block by address, url: "api/stars/address:[ADDRESS]"
+     */
+    getBlockByAddress() {
+        this.app.get("/api/stars/address::address", (req, res) => {
+            // Add your code here
+            this.getDBBlockByAddress(req.params.address).then((block) => {
+              res.send(block);
+            }).catch((err) => { 
+              console.log(err);
+              res.send("There was a error with getting a block.");
+            });
+        });
+    }
+
+      /**
+     * Implement a GET Endpoint to retrieve a star by index, url: "/api/block/:index"
      */
     getBlockByIndex() {
         this.app.get("/api/block/:index", (req, res) => {
@@ -37,10 +69,10 @@ class BlockChain {
      */
     postNewBlock() {
         this.app.post("/api/block", (req, res) => {
-            if(!req.body.body){
+            if(!req.body){
               res.send("Cannot create Block: String is empty.");
             } else {
-              let blockTest = new Block.Block(req.body.body);
+              let blockTest = new Block.Block(req.body);
               this.addBlock(blockTest).then((result) => {
               console.log(result);
               res.send("Got a Post request!");
@@ -86,6 +118,16 @@ async addBlock (newBlock) {
 async getBlock (height) {
     // Add your code here
     return JSON.parse(await this.bd.getLevelDBData(height))
+  }
+
+// Get block by Hash
+  async getDBBlockByHash(hash) {
+    return await this.bd.getLevelDBDataByHash(hash)
+  }
+
+  // Get block by Hash
+  async getDBBlockByAddress(address) {
+    return await this.bd.getLevelDBDataByAddress(address)
   }
 
 
