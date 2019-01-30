@@ -32,9 +32,9 @@ class BlockChain {
 
           if(this.requests.length == 0) {
             //adding new request
-            var timeStamp = new Date().getTime().toString().slice(0, -3);
+            let timeStamp = new Date().getTime().toString().slice(0, -3);
 
-            var data = {
+            let data = {
               address: req.body.address,
               requestTimeStamp: timeStamp,
               message : req.body.address + ":" + timeStamp + ":starRegistry",
@@ -44,20 +44,20 @@ class BlockChain {
             res.send(data);              
           } else {
             //checking if the request already exsists 
-            for (var i=0; i<this.requests.length; i++) {
+            for (let i=0; i<this.requests.length; i++) {
               if (this.requests[i].address == req.body.address) {
                 //check if no timeout
-                var currentTime = new Date().getTime().toString().slice(0, -3);
-                var difference = currentTime - this.requests[i].requestTimeStamp;
+                let currentTime = new Date().getTime().toString().slice(0, -3);
+                let difference = currentTime - this.requests[i].requestTimeStamp;
                 if( difference < TimeoutRequestsWindowTime) {
                   this.requests[i].validationWindow = TimeoutRequestsWindowTime - difference;
                   res.send(this.requests[i]);
                 } else {
                   //delete old request and add new
                   this.requests.splice(i, 1);
-                  var timeStamp = new Date().getTime().toString().slice(0, -3);
+                  let timeStamp = new Date().getTime().toString().slice(0, -3);
 
-                  var data = {
+                  let data = {
                     address: req.body.address,
                     requestTimeStamp: timeStamp,
                     message : req.body.address + ":" + timeStamp + ":starRegistry",
@@ -79,15 +79,15 @@ class BlockChain {
     postMessageValidation() {
         this.app.post("/api/message-signature/validate", (req, res) => {
 
-          for (var i=0; i<this.requests.length; i++) {
+          for (let  i=0; i<this.requests.length; i++) {
             //check if the request exsits
             if (this.requests[i].address == req.body.address) {
                 // check if no timeout
-                var currentTime = new Date().getTime().toString().slice(0, -3);
-                var difference = currentTime - this.requests[i].requestTimeStamp;
+                let currentTime = new Date().getTime().toString().slice(0, -3);
+                let difference = currentTime - this.requests[i].requestTimeStamp;
                 if( difference < TimeoutRequestsWindowTime) {
                   let isValid = bitcoinMessage.verify(this.requests[i].message, req.body.address, req.body.signature);
-                  var status = {
+                  let status = {
                     address: req.body.address,
                     requestTimeStamp: currentTime,
                     message : this.requests[i].message,
@@ -95,7 +95,7 @@ class BlockChain {
                     messageSignature : isValid 
                   };
 
-                  var data = {
+                  let data = {
                     registerStar : isValid ,
                     status : status
                   };
@@ -160,7 +160,7 @@ class BlockChain {
     postNewBlock() {
         this.app.post("/api/block", (req, res) => {
 
-          for (var i=0; i<this.registeredStars.length; i++){
+          for (let i=0; i<this.registeredStars.length; i++){
             //check if the star is regsitered and valid
             if((this.registeredStars[i].status.address == req.body.address) && (this.registeredStars[i].registerStar == true)){
               if(!req.body){
