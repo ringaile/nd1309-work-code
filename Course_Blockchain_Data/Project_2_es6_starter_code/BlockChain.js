@@ -14,7 +14,7 @@ class BlockChain {
   constructor (app) {
     this.app = app;
     this.bd = new LevelSandbox.LevelSandbox();
-    this.timeoutRequests = [];
+    this.requests = [];
     this.generateGenesisBlock();
     this.getBlockByHash();
     this.getBlockByIndex();
@@ -29,16 +29,47 @@ class BlockChain {
      */
     postRequestValidation() {
         this.app.post("/api/requestValidation", (req, res) => {
-          var timeStamp = new Date().getTime().toString().slice(0, -3);
-          this.timeoutRequests.push(timeStamp);
 
-          var data = {
-            address: req.body.address,
-            requestTimeStamp: timeStamp,
-            message : req.body.address + ":" + timeStamp + ":starRegistry",
-            validationWindow : TimeoutRequestsWindowTime
-          };
-            res.send(data);       
+          if(this.requests.length == 0) {
+            //adding new request
+            var timeStamp = new Date().getTime().toString().slice(0, -3);
+
+            var data = {
+              address: req.body.address,
+              requestTimeStamp: timeStamp,
+              message : req.body.address + ":" + timeStamp + ":starRegistry",
+              validationWindow : TimeoutRequestsWindowTime
+            };
+            this.requests.push(data);
+            res.send(data);              
+          } else {
+            //checking if the request already exsists 
+            for (var i=0; i<this.requests.length; i++) {
+              if (this.requests[i].address == req.body.address) {
+                //check if no timeout
+                var currentTime = new Date().getTime().toString().slice(0, -3);
+                var difference = currentTime - this.requests[i].requestTimeStamp;
+                if( difference < TimeoutRequestsWindowTime) {
+                  this.requests[i].validationWindow = TimeoutRequestsWindowTime - difference;
+                  res.send(this.requests[i]);
+                } else {
+                  //delete old request and add new
+                  this.requests.splice(i, 1);
+                  var timeStamp = new Date().getTime().toString().slice(0, -3);
+
+                  var data = {
+                    address: req.body.address,
+                    requestTimeStamp: timeStamp,
+                    message : req.body.address + ":" + timeStamp + ":starRegistry",
+                    validationWindow : TimeoutRequestsWindowTime
+                  };
+                  this.requests.push(data);
+                  res.send(data);
+                }
+                }
+            }
+          }
+               
         });
     }
 
