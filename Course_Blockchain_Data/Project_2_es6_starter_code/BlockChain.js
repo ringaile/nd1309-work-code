@@ -8,13 +8,13 @@ const Block = require('./Block.js');
 const bitcoin = require('bitcoinjs-lib');
 const bitcoinMessage = require('bitcoinjs-message');
 const TimeoutRequestsWindowTime = 5*60*1000;
-var isValid = false;
 
 class BlockChain {
   constructor (app) {
     this.app = app;
     this.bd = new LevelSandbox.LevelSandbox();
     this.requests = [];
+    this.registeredStars = [];
     this.generateGenesisBlock();
     this.getBlockByHash();
     this.getBlockByIndex();
@@ -79,25 +79,31 @@ class BlockChain {
     postMessageValidation() {
         this.app.post("/api/message-signature/validate", (req, res) => {
 
-          var timeStamp = new Date().getTime().toString().slice(0, -3);
-          this.isValid = bitcoinMessage.verify(message, req.body.address, req.body.signature);
+          for (var i=0; i<this.requests.length; i++) {
+            //check if the request exsits
+            if (this.requests[i].address == req.body.address) {
+                // check if no timeout
+                var currentTime = new Date().getTime().toString().slice(0, -3);
+                var difference = currentTime - this.requests[i].requestTimeStamp;
+                if( difference < TimeoutRequestsWindowTime) {
+                  let isValid = bitcoinMessage.verify(this.requests[i].message, req.body.address, req.body.signature);
+                  var status = {
+                    address: req.body.address,
+                    requestTimeStamp: currentTime,
+                    message : this.requests[i].message,
+                    validationWindow : TimeoutRequestsWindowTime - difference,
+                    messageSignature : isValid 
+                  };
 
-          let timeElapse = (new Date().getTime().toString().slice(0,-3)) - timeStamp[0];
-          let timeLeft = (TimeoutRequestsWindowTime/1000) - timeElapse;
-
-          var status = {
-            address: req.body.address,
-            requestTimeStamp: timeStamp,
-            message : req.body.address + ":" + timeStamp + ":starRegistry",
-            validationWindow : timeLeft,
-            messageSignature : this.isValid 
-          };
-
-          var data = {
-            registerStar : this.isValid ,
-            status : status
-          };
-            res.send(data);       
+                  var data = {
+                    registerStar : isValid ,
+                    status : status
+                  };
+                    res.send(data);  
+                }
+            }
+          } 
+          res.send("No Request found!");    
         });
     }
 
@@ -153,22 +159,26 @@ class BlockChain {
      */
     postNewBlock() {
         this.app.post("/api/block", (req, res) => {
-          if(isValid){
-            if(!req.body){
-              res.send("Cannot create Block: String is empty.");
+
+          for (var i=0; i<this.registeredStars.length; i++){
+            //check if the star is regsitered and valid
+            if((this.registeredStars[i].status.address == req.body.address) && (this.registeredStars[i].registerStar == true)){
+              if(!req.body){
+                res.send("Cannot create Block: String is empty.");
+              } else {
+                let blockTest = new Block.Block(req.body);
+                this.addBlock(blockTest).then((result) => {
+                console.log(result);
+                res.send("Got a Post request!");
+                }).catch((err) => { 
+                  console.log(err);
+                  res.send("There was a error creating a block.");
+                }); 
+              }           
             } else {
-              let blockTest = new Block.Block(req.body);
-              this.addBlock(blockTest).then((result) => {
-              console.log(result);
-              res.send("Got a Post request!");
-              }).catch((err) => { 
-                console.log(err);
-                res.send("There was a error creating a block.");
-              }); 
-            }           
-          } else {
-            res.send("You must sign the message before.");
-          }
+              res.send("You must sign the message before.");
+            }
+          }          
       });
     }
 
