@@ -11,6 +11,25 @@ To setup the project for review do the following:
 
 ## Blockchain API
 
+## POST Request Validation Endpoint
+
+http://localhost:8000/api/requestValidation
+
+with body:
+{ 
+	"address":"19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL" 
+}
+
+## POST Message Signature
+
+http://localhost:8000/api/message-signature/validate
+
+with body:
+{
+	"address":"19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL",
+	"signature":"H8K4+1MvyJo9tcr2YN2KejwvX1oqneyCH+fsUL1z1WBdWmswB9bijeFfOfMqK68kQ5RO6ZxhomoXQG3fkLaBl+Q="
+}
+
 ##GET Block Endpoint
 
 http://localhost:8000/block/[blockheight]
@@ -18,13 +37,32 @@ http://localhost:8000/block/[blockheight]
 Example URL path:
 http://localhost:8000/block/0, where '0' is the block height.
 
+## GET Block by Hash Endpoint
+
+http://localhost:8000/api/stars/hash:[hash]
+
+Example URL path:
+http://localhost:8000/api/stars/hash:32d161bb3483da5a6331e5b8304541ab3610eed4405a28692cc751b30d598da6
+
+## GET Block by Address Endpoint
+
+http://localhost:8000/api/stars/address:[address]
+
+Example URL path:
+http://localhost:8000/api/stars/address:19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL
+
 ##POST Block Endpoint
 
 http://localhost:8000/block
 
 with body:
 {
-      "body": "Your String goes here."
+    "address": "19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL",
+    "star": {
+                "dec": "68° 52' 56.9",
+                "ra": "16h 29m 1.0s",
+                "story": "Found star using https://www.google.com/sky/"
+            }
 }
 
 

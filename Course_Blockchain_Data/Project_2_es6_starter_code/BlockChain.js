@@ -78,7 +78,7 @@ class BlockChain {
      */
     postMessageValidation() {
         this.app.post("/api/message-signature/validate", (req, res) => {
-
+          let isFound = false;
           for (let  i=0; i<this.requests.length; i++) {
             //check if the request exsits
             if (this.requests[i].address == req.body.address) {
@@ -99,11 +99,14 @@ class BlockChain {
                     registerStar : isValid ,
                     status : status
                   };
-                    res.send(data);  
+                  isFound = true;
+                  res.send(data);  
                 }
             }
           } 
-          res.send("No Request found!");    
+          if(!isFound) {
+            res.send("No Request found!");  
+          }            
         });
     }
 
@@ -160,6 +163,7 @@ class BlockChain {
     postNewBlock() {
         this.app.post("/api/block", (req, res) => {
 
+          let isMessageSigned = false;
           for (let i=0; i<this.registeredStars.length; i++){
             //check if the star is regsitered and valid
             if((this.registeredStars[i].status.address == req.body.address) && (this.registeredStars[i].registerStar == true)){
@@ -169,15 +173,17 @@ class BlockChain {
                 let blockTest = new Block.Block(req.body);
                 this.addBlock(blockTest).then((result) => {
                 console.log(result);
+                isMessageSigned = true;
                 res.send("Got a Post request!");
                 }).catch((err) => { 
                   console.log(err);
                   res.send("There was a error creating a block.");
                 }); 
               }           
-            } else {
-              res.send("You must sign the message before.");
             }
+          }
+          if(!isMessageSigned) {
+            res.send("You must sign the message before.");
           }          
       });
     }
