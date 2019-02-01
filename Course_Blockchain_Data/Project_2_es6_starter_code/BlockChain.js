@@ -100,6 +100,7 @@ class BlockChain {
                     status : status
                   };
                   isFound = true;
+                  this.registeredStars.push(data)
                   res.send(data);  
                 }
             }
@@ -163,7 +164,7 @@ class BlockChain {
     postNewBlock() {
         this.app.post("/api/block", (req, res) => {
 
-          let isMessageSigned = false;
+          let isMessageSigned = false;   
           for (let i=0; i<this.registeredStars.length; i++){
             //check if the star is regsitered and valid
             if((this.registeredStars[i].status.address == req.body.address) && (this.registeredStars[i].registerStar == true)){
