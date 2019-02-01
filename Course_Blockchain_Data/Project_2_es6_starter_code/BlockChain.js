@@ -7,7 +7,7 @@ const LevelSandbox = require('./LevelSandbox.js');
 const Block = require('./Block.js');
 const bitcoin = require('bitcoinjs-lib');
 const bitcoinMessage = require('bitcoinjs-message');
-const TimeoutRequestsWindowTime = 5*60*1000;
+const TimeoutRequestsWindowTime = 5*60;
 
 class BlockChain {
   constructor (app) {
@@ -164,14 +164,16 @@ class BlockChain {
     postNewBlock() {
         this.app.post("/api/block", (req, res) => {
 
-          let isMessageSigned = false;   
+          let isMessageSigned = true;   
           for (let i=0; i<this.registeredStars.length; i++){
             //check if the star is regsitered and valid
-            if((this.registeredStars[i].status.address == req.body.address) && (this.registeredStars[i].registerStar == true)){
+            if((this.registeredStars[i].status.address == req.body.address) && (this.registeredStars[i].registerStar == false)){
               if(!req.body){
                 res.send("Cannot create Block: String is empty.");
               } else {
-                let blockTest = new Block.Block(req.body);
+                let blockData = req.body;
+                blockData.star.story = Buffer(req.body.star.story).toString('hex');
+                let blockTest = new Block.Block(blockData);
                 this.addBlock(blockTest).then((result) => {
                 console.log(result);
                 isMessageSigned = true;
