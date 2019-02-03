@@ -13,7 +13,7 @@ To setup the project for review do the following:
 
 ## POST Request Validation Endpoint
 
-http://localhost:8000/api/requestValidation
+http://localhost:8000/requestValidation
 
 with body:
 { 
@@ -22,7 +22,7 @@ with body:
 
 ## POST Message Signature
 
-http://localhost:8000/api/message-signature/validate
+http://localhost:8000/message-signature/validate
 
 with body:
 {
@@ -39,17 +39,17 @@ http://localhost:8000/block/0, where '0' is the block height.
 
 ## GET Block by Hash Endpoint
 
-http://localhost:8000/api/stars/hash:[hash]
+http://localhost:8000/stars/hash:[hash]
 
 Example URL path:
-http://localhost:8000/api/stars/hash:32d161bb3483da5a6331e5b8304541ab3610eed4405a28692cc751b30d598da6
+http://localhost:8000/stars/hash:32d161bb3483da5a6331e5b8304541ab3610eed4405a28692cc751b30d598da6
 
 ## GET Block by Address Endpoint
 
-http://localhost:8000/api/stars/address:[address]
+http://localhost:8000/stars/address:[address]
 
 Example URL path:
-http://localhost:8000/api/stars/address:19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL
+http://localhost:8000/stars/address:19xaiMqayaNrn3x7AjV5cU4Mk5f5prRVpL
 
 ##POST Block Endpoint
 

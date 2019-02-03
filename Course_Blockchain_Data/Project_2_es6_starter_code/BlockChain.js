@@ -25,10 +25,10 @@ class BlockChain {
   }
 
     /**
-     * Implement a POST Endpoint to request validation, url: "/api/requestValidation"
+     * Implement a POST Endpoint to request validation, url: "/requestValidation"
      */
     postRequestValidation() {
-        this.app.post("/api/requestValidation", (req, res) => {
+        this.app.post("/requestValidation", (req, res) => {
 
           if(this.requests.length == 0) {
             //adding new request
@@ -74,10 +74,10 @@ class BlockChain {
     }
 
         /**
-     * Implement a POST Endpoint to validate message, url: "/api/message-signature/validate"
+     * Implement a POST Endpoint to validate message, url: "/message-signature/validate"
      */
     postMessageValidation() {
-        this.app.post("/api/message-signature/validate", (req, res) => {
+        this.app.post("/message-signature/validate", (req, res) => {
           let isFound = false;
           for (let  i=0; i<this.requests.length; i++) {
             //check if the request exsits
@@ -112,10 +112,10 @@ class BlockChain {
     }
 
   /**
-     * Implement a GET Endpoint to retrieve a block by hash, url: "api/stars/hash:[HASH]"
+     * Implement a GET Endpoint to retrieve a block by hash, url: "stars/hash:[HASH]"
      */
     getBlockByHash() {
-        this.app.get("/api/stars/hash::hash", (req, res) => {
+        this.app.get("/stars/hash::hash", (req, res) => {
             // Add your code here
             this.getDBBlockByHash(req.params.hash).then((block) => {
               res.send(block);
@@ -127,10 +127,10 @@ class BlockChain {
     }
 
       /**
-     * Implement a GET Endpoint to retrieve a block by address, url: "api/stars/address:[ADDRESS]"
+     * Implement a GET Endpoint to retrieve a block by address, url: "stars/address:[ADDRESS]"
      */
     getBlockByAddress() {
-        this.app.get("/api/stars/address::address", (req, res) => {
+        this.app.get("/stars/address::address", (req, res) => {
             // Add your code here
             this.getDBBlockByAddress(req.params.address).then((block) => {
               res.send(block);
@@ -142,10 +142,10 @@ class BlockChain {
     }
 
       /**
-     * Implement a GET Endpoint to retrieve a star by index, url: "/api/block/:index"
+     * Implement a GET Endpoint to retrieve a star by index, url: "/block/:index"
      */
     getBlockByIndex() {
-        this.app.get("/api/block/:index", (req, res) => {
+        this.app.get("/block/:index", (req, res) => {
             // Add your code here
             this.getBlock(req.params.index).then((block) => {
               console.log(JSON.stringify(block));
@@ -159,15 +159,15 @@ class BlockChain {
     }
 
         /**
-     * Implement a POST Endpoint to add a new Block, url: "/api/block" only if user has signed already
+     * Implement a POST Endpoint to add a new Block, url: "/block" only if user has signed already
      */
     postNewBlock() {
-        this.app.post("/api/block", (req, res) => {
+        this.app.post("/block", (req, res) => {
 
-          let isMessageSigned = true;   
+          let isMessageSigned = false;   
           for (let i=0; i<this.registeredStars.length; i++){
             //check if the star is regsitered and valid
-            if((this.registeredStars[i].status.address == req.body.address) && (this.registeredStars[i].registerStar == false)){
+            if((this.registeredStars[i].status.address == req.body.address) && (this.registeredStars[i].registerStar == true)){
               if(!req.body){
                 res.send("Cannot create Block: String is empty.");
               } else {
@@ -177,7 +177,7 @@ class BlockChain {
                 this.addBlock(blockTest).then((result) => {
                 console.log(result);
                 isMessageSigned = true;
-                res.send("Got a Post request!");
+                res.send(blockTest);
                 }).catch((err) => { 
                   console.log(err);
                   res.send("There was a error creating a block.");
